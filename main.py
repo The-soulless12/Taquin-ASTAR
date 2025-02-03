@@ -32,7 +32,7 @@ def trouver_case_vide(grille):
                 return i, j
     return None
 
-def deplacer_taquin(grille, direction):
+def deplacer(grille, direction):
     taille = len(grille)
     x, y = trouver_case_vide(grille)
     
@@ -61,16 +61,27 @@ def cases_cibles(grille):
 
     return cases
 
+def est_termine(grille):
+    # Cette fonction vérifie si la grille est dans l'état final
+    taille = len(grille)
+    compteur = 1  
+    for i in range(taille):
+        for j in range(taille):
+            if grille[i][j] != 0 and grille[i][j] != compteur:
+                return False
+            compteur += 1
+    return True
+
 def main():
-    taille = 4
+    taille = 3
     taquin = creer_taquin(taille)
     afficher_taquin(taquin)
 
-    while True:
+    while not est_termine(taquin):
         direction = input("Tapez (h ↑, b ↓, g ←, d →) ou 'q' pour quitter : ")
         if direction == 'q':
             break
-        deplacer_taquin(taquin, direction)
+        deplacer(taquin, direction)
         afficher_taquin(taquin)
 
 if __name__ == "__main__":
