@@ -70,7 +70,20 @@ def est_termine(grille):
             if grille[i][j] != 0 and grille[i][j] != compteur:
                 return False
             compteur += 1
+    print("\nFélicitations, vous avez gagné !\n")
     return True
+
+def heuristique(grille):
+    # Cette heuristique calcule le nombre de pièces mal placées
+    taille = len(grille)
+    mal_places = 0
+    compteur = 1
+    for i in range(taille):
+        for j in range(taille):
+            if grille[i][j] != 0 and grille[i][j] != compteur:
+                mal_places += 1
+            compteur += 1
+    return mal_places   
 
 def main():
     taille = 3
