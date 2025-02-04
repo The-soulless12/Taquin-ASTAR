@@ -89,13 +89,16 @@ def heuristique(grille):
 def generer_voisins(grille, closed_list):
     # Cette fonction va générer les grilles voisines de "grille"
     voisins = []
-    directions = ['b', 'h', 'd', 'g']
-        
-    for direction in directions:
+    directions = {'b': (-1, 0), 'h': (1, 0), 'd': (0, -1), 'g': (0, 1)} # Utile pour la génération de la séquence solution
+    
+    for direction, (dx, dy) in directions.items():
         grille_copy = [ligne[:] for ligne in grille]
-        deplacer(grille_copy, direction)
-        if tuple(tuple(ligne) for ligne in grille_copy) not in closed_list:
-            voisins.append(grille_copy)
+        x, y = trouver_case_vide(grille)
+        nx, ny = x + dx, y + dy
+        if 0 <= nx < len(grille) and 0 <= ny < len(grille):
+            grille_copy[x][y], grille_copy[nx][ny] = grille_copy[nx][ny], grille_copy[x][y]
+            if tuple(tuple(ligne) for ligne in grille_copy) not in closed_list:
+                voisins.append((grille_copy, direction)) 
     return voisins
 
 def a_star(taquin):
@@ -104,25 +107,25 @@ def a_star(taquin):
     
     # On initialise la liste des nœuds ouverts
     open_list = []
-    heapq.heappush(open_list, (heuristique(taquin), taquin, []))  # (coût f(n), grille, chemin)
+    heapq.heappush(open_list, (heuristique(taquin), taquin, []))  # coût f(n), grille, chemin
     # On initialise la liste des nœuds fermés (les grilles déjà explorées)
     closed_list = set()
 
     while open_list:
-        _, grille_actuelle, chemin = heapq.heappop(open_list) # On sélectionne le nœud avec le plus faible coût total f(n)
+        _, grille_actuelle, chemin_mouvements = heapq.heappop(open_list) # On sélectionne le nœud avec le plus faible coût total f(n)
         # Note : le _ désigne le f qui est utile pour le tri mais inutile après l'extraction
         
         if grille_actuelle == objectif:
-            return chemin
+            return chemin_mouvements
         
         closed_list.add(tuple(tuple(ligne) for ligne in grille_actuelle)) # On ajoute la grille actuelle à la liste des nœuds fermés
         
-        for voisin in generer_voisins(grille_actuelle, closed_list):
-            g = len(chemin) + 1
+        for voisin, mouvement in generer_voisins(grille_actuelle, closed_list):
+            g = len(chemin_mouvements) + 1
             h = heuristique(voisin)
             f_voisin = g + h
             if tuple(tuple(ligne) for ligne in voisin) not in closed_list:
-                heapq.heappush(open_list, (f_voisin, voisin, chemin + [voisin]))
+                heapq.heappush(open_list, (f_voisin, voisin, chemin_mouvements + [mouvement]))
     
     return None
 
@@ -134,8 +137,7 @@ def main():
     solution = a_star(taquin)
     if solution:
         print("\nSolution trouvée !")
-        for etape in solution:
-            afficher_taquin(etape)
+        print("Séquence des mouvements :", ''.join(solution))
     else:
         print("Aucune solution trouvée.")
 
