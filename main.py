@@ -172,8 +172,10 @@ def a_star(taquin):
             f_voisin = g + h
             if tuple(tuple(ligne) for ligne in voisin) not in closed_list:
                 heapq.heappush(open_list, (f_voisin, voisin, chemin_mouvements + [mouvement]))
-    
     return None
+
+import tkinter as tk
+from tkinter import messagebox
 
 # Création de l'interface graphique du Taquin
 class TaquinApp:
@@ -181,7 +183,7 @@ class TaquinApp:
         self.root = root
         self.root.title("Taquin")
 
-        self.taille = 3 # La taille du taquin
+        self.taille = 4  # La taille du taquin
         self.taquin = creer_taquin(self.taille)
 
         self.frame = tk.Frame(self.root)
@@ -196,9 +198,11 @@ class TaquinApp:
         self.submit_button = tk.Button(self.root, text="Déplacer", command=self.deplacer_utilisateur)
         self.submit_button.pack()
 
-        self.result_button = tk.Button(self.root, text="Trouver solution", command=self.trouver_solution)
-        self.result_button.pack()
-
+        # En raison de l'explosion combinatoire de l'algorithme A* et de la puissance de la machine exécutant
+        # le programme, il est recommandé d'utiliser A* uniquement pour les taquins de taille 3x3.
+        if self.taille <= 3:
+            self.result_button = tk.Button(self.root, text="Trouver solution", command=self.trouver_solution)
+            self.result_button.pack()
         self.root.bind('<Return>', self.deplacer_utilisateur_entree)
 
         self.root.resizable(False, False)
@@ -210,6 +214,8 @@ class TaquinApp:
                                  width=4, height=2, relief="solid", font=("Courier", 14))
                 label.grid(row=i, column=j, padx=5, pady=5)
                 self.labels[i][j] = label
+                # Ajout d'un événement de clic pour déplacer une pièce
+                label.bind("<Button-1>", lambda event, x=i, y=j: self.clic_piece(x, y))
         self.update()
 
     def update(self):
@@ -219,7 +225,18 @@ class TaquinApp:
                 if value == 0:
                     self.labels[i][j].config(text="", bg="white")
                 else:
-                    self.labels[i][j].config(text=str(value), bg="lightblue")
+                    self.labels[i][j].config(text=str(value), bg="lightpink")
+
+    def clic_piece(self, i, j):
+        # Trouve la position de la case vide
+        x, y = trouver_case_vide(self.taquin)
+        
+        # Vérifie si la pièce cliquée est adjacente à la case vide
+        if abs(i - x) + abs(j - y) == 1:
+            self.taquin[x][y], self.taquin[i][j] = self.taquin[i][j], self.taquin[x][y]
+            self.update()
+            if est_termine(self.taquin):
+                messagebox.showinfo("Victoire", "Félicitations, vous avez gagné !")
 
     def deplacer_utilisateur(self, event=None):
         direction = self.entry.get()
