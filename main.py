@@ -135,7 +135,7 @@ def heuristique(grille):
 def generer_voisins(grille, closed_list):
     # Cette fonction va générer les grilles voisines de "grille"
     voisins = []
-    directions = {'b': (-1, 0), 'h': (1, 0), 'd': (0, -1), 'g': (0, 1)} # Utile pour la génération de la séquence solution
+    directions = {'bas': (-1, 0), 'haut': (1, 0), 'droite': (0, -1), 'gauche': (0, 1)} # Utile pour la génération de la séquence solution
     
     for direction, (dx, dy) in directions.items():
         grille_copy = [ligne[:] for ligne in grille]
@@ -174,16 +174,13 @@ def a_star(taquin):
                 heapq.heappush(open_list, (f_voisin, voisin, chemin_mouvements + [mouvement]))
     return None
 
-import tkinter as tk
-from tkinter import messagebox
-
 # Création de l'interface graphique du Taquin
 class TaquinApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Taquin")
 
-        self.taille = 4  # La taille du taquin
+        self.taille = 3 # La taille du taquin
         self.taquin = creer_taquin(self.taille)
 
         self.frame = tk.Frame(self.root)
@@ -203,6 +200,7 @@ class TaquinApp:
         if self.taille <= 3:
             self.result_button = tk.Button(self.root, text="Trouver solution", command=self.trouver_solution)
             self.result_button.pack()
+
         self.root.bind('<Return>', self.deplacer_utilisateur_entree)
 
         self.root.resizable(False, False)
@@ -254,11 +252,18 @@ class TaquinApp:
         self.deplacer_utilisateur()
 
     def trouver_solution(self):
-        solution = a_star(self.taquin)
-        if solution:
-            messagebox.showinfo("Solution trouvée", f"Solution : {' '.join(solution)}")
-        else:
-            messagebox.showinfo("Solution", "Aucune solution trouvée.")
+        sequence_solution = a_star(self.taquin)
+        
+        # Créer une nouvelle fenêtre pour afficher la solution
+        solution_fenetre = tk.Toplevel(self.root)
+        solution_fenetre.title("Solution")
+        solution_text = "Voici la solution du taquin :\n" + "\n".join(sequence_solution)
+        
+        solution_label = tk.Label(solution_fenetre, text=solution_text, font=("Courier", 14))
+        solution_label.pack(padx=20, pady=20)
+
+        fermer_button = tk.Button(solution_fenetre, text="Fermer", command=solution_fenetre.destroy)
+        fermer_button.pack(pady=10)
 
 if __name__ == "__main__":
     root = tk.Tk()
