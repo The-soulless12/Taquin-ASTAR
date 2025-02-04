@@ -1,14 +1,60 @@
 import random
 import heapq
 from colorama import Fore, Style
+import tkinter as tk
+from tkinter import messagebox
 
 def creer_taquin(taille):
-    # On génère les valeurs dans le désordre
-    valeurs = list(range(1, taille * taille)) + [0] 
-    random.shuffle(valeurs) 
-    return [valeurs[i * taille:(i + 1) * taille] for i in range(taille)]
+    while True:
+        # On génère les valeurs dans le désordre
+        valeurs = list(range(1, taille * taille)) + [0] 
+        random.shuffle(valeurs)
+        grille = [valeurs[i * taille:(i + 1) * taille] for i in range(taille)]
+        
+        # Vérifie si le taquin est solvable
+        if est_solvable(grille) and grille != [[(i * taille + j + 1) % (taille * taille) for j in range(taille)] for i in range(taille)]:
+            return grille
+
+def transposition(valeurs, N):
+    # Cette fonction calcule le nombre de transpositions dans une configuration donnée
+    valeurs_new = [N if v == 0 else v for v in valeurs]  # On remplace la case vide par N
+    cible = sorted(valeurs_new)
+    transpositions = 0
+    index_map = {val: i for i, val in enumerate(valeurs_new)}  # On cherche la losition actuelle de chaque valeur
+    
+    for i in range(len(valeurs_new)):
+        while valeurs_new[i] != cible[i]:  # Tant que la valeur à l'index n'est pas correcte
+            cible_index = index_map[cible[i]]  # L'index où la valeur correcte doit être
+            valeurs_new[i], valeurs_new[cible_index] = valeurs_new[cible_index], valeurs_new[i]  # On effectue un swap
+            index_map[valeurs_new[cible_index]] = cible_index  # On met à jour l'index de la valeur échangée
+            index_map[valeurs_new[i]] = i  # On met à jour l'index de la valeur actuelle
+            transpositions += 1  # On augmenter le compteur de transpositions
+    
+    return transpositions 
+
+def permutations_case_vide(valeurs, taille):
+    # Cette fonction calcule le nombre de permutations nécessaires pour déplacer la case vide jusqu'à la fin du tableau
+    valeurs_new = [taille*taille if v == 0 else v for v in valeurs]
+    index_vide = valeurs_new.index(taille*taille)  # On cherche la position actuelle de la case vide
+    
+    ligne = (index_vide) // taille
+    colonne = (index_vide) % taille
+    # On permute horizontalement la case vide jusqu'à la fin de sa ligne puis verticalement jusqu'à la fin de sa colonne
+    return ( 2*taille- 2 - ligne - colonne)
+
+def est_solvable(grille):
+    # Cette fonction vérifie si une configuration de taquin est solvable ou pas
+    taille = len(grille)
+    valeurs = [grille[i][j] for i in range(taille) for j in range(taille)]
+    N = taille * taille  # Valeur à utiliser pour remplacer le 0
+    
+    nb_transposition = transposition(valeurs, N)
+    nb_permutations= permutations_case_vide(valeurs, taille)
+    # Le problème est solvable si la parité de la permutation est identique à la parité de permutation la case vide
+    return (nb_transposition % 2) == (nb_permutations% 2) # Il s'agit d'un XOR
 
 def afficher_taquin(grille):
+    # Affiche le taquin en mode console
     taille = len(grille)
     largeur = len(str(taille * taille - 1))
     separateur = "+" + ("-" * (largeur + 2) + "+") * taille
@@ -84,8 +130,8 @@ def heuristique(grille):
             if grille[i][j] != 0 and grille[i][j] != compteur:
                 mal_places += 1
             compteur += 1
-    return mal_places   
-
+    return mal_places
+   
 def generer_voisins(grille, closed_list):
     # Cette fonction va générer les grilles voisines de "grille"
     voisins = []
@@ -129,24 +175,75 @@ def a_star(taquin):
     
     return None
 
-def main():
-    taille = 3
-    taquin = creer_taquin(taille)
-    afficher_taquin(taquin)
+# Création de l'interface graphique du Taquin
+class TaquinApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Taquin")
 
-    solution = a_star(taquin)
-    if solution:
-        print("\nSolution trouvée !")
-        print("Séquence des mouvements :", ''.join(solution))
-    else:
-        print("Aucune solution trouvée.")
+        self.taille = 3 # La taille du taquin
+        self.taquin = creer_taquin(self.taille)
 
-    while not est_termine(taquin):
-        direction = input("Tapez (h ↑, b ↓, g ←, d →) ou 'q' pour quitter : ")
-        if direction == 'q':
-            break
-        deplacer(taquin, direction)
-        afficher_taquin(taquin)
+        self.frame = tk.Frame(self.root)
+        self.frame.pack()
+
+        self.labels = [[None for _ in range(self.taille)] for _ in range(self.taille)]
+        self.create_buttons()
+
+        self.entry = tk.Entry(self.root, font=("Courier", 14))
+        self.entry.pack()
+
+        self.submit_button = tk.Button(self.root, text="Déplacer", command=self.deplacer_utilisateur)
+        self.submit_button.pack()
+
+        self.result_button = tk.Button(self.root, text="Trouver solution", command=self.trouver_solution)
+        self.result_button.pack()
+
+        self.root.bind('<Return>', self.deplacer_utilisateur_entree)
+
+        self.root.resizable(False, False)
+
+    def create_buttons(self):
+        for i in range(self.taille):
+            for j in range(self.taille):
+                label = tk.Label(self.frame, text=self.taquin[i][j] if self.taquin[i][j] != 0 else '',
+                                 width=4, height=2, relief="solid", font=("Courier", 14))
+                label.grid(row=i, column=j, padx=5, pady=5)
+                self.labels[i][j] = label
+        self.update()
+
+    def update(self):
+        for i in range(self.taille):
+            for j in range(self.taille):
+                value = self.taquin[i][j]
+                if value == 0:
+                    self.labels[i][j].config(text="", bg="white")
+                else:
+                    self.labels[i][j].config(text=str(value), bg="lightblue")
+
+    def deplacer_utilisateur(self, event=None):
+        direction = self.entry.get()
+        if direction in ['h', 'b', 'd', 'g']:
+            deplacer(self.taquin, direction)
+            self.update()
+            if est_termine(self.taquin):
+                messagebox.showinfo("Victoire", "Félicitations, vous avez gagné !")
+        else:
+            self.entry.delete(0, tk.END)
+        
+        self.entry.delete(0, tk.END)
+
+    def deplacer_utilisateur_entree(self, event):
+        self.deplacer_utilisateur()
+
+    def trouver_solution(self):
+        solution = a_star(self.taquin)
+        if solution:
+            messagebox.showinfo("Solution trouvée", f"Solution : {' '.join(solution)}")
+        else:
+            messagebox.showinfo("Solution", "Aucune solution trouvée.")
 
 if __name__ == "__main__":
-    main()
+    root = tk.Tk()
+    app = TaquinApp(root)
+    root.mainloop()
