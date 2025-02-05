@@ -180,7 +180,7 @@ class TaquinApp:
         self.root = root
         self.root.title("Taquin")
 
-        self.taille = 3 # La taille du taquin
+        self.taille = 4 # La taille du taquin
         self.taquin = creer_taquin(self.taille)
 
         self.frame = tk.Frame(self.root)
@@ -202,6 +202,11 @@ class TaquinApp:
             self.result_button.pack()
 
         self.root.bind('<Return>', self.deplacer_utilisateur_entree)
+
+        self.recommencer_button = tk.Button(self.root, text="Nouveau Taquin", command=self.reinitialiser)
+        self.recommencer_button.pack()
+
+        self.solution_fenetre = None
 
         self.root.resizable(False, False)
 
@@ -253,17 +258,27 @@ class TaquinApp:
 
     def trouver_solution(self):
         sequence_solution = a_star(self.taquin)
+        if self.solution_fenetre:  # Si la fenêtre de solution est déjà ouverte, il faut la fermer
+            self.solution_fenetre.destroy()
         
         # On crée une nouvelle fenêtre pour afficher la solution
-        solution_fenetre = tk.Toplevel(self.root)
-        solution_fenetre.title("Solution")
+        self.solution_fenetre = tk.Toplevel(self.root)
+        self.solution_fenetre.title("Solution")
         solution_text = "Voici la solution du taquin :\n" + "\n".join(sequence_solution)
         
-        solution_label = tk.Label(solution_fenetre, text=solution_text, font=("Courier", 14))
+        solution_label = tk.Label(self.solution_fenetre, text=solution_text, font=("Courier", 14))
         solution_label.pack(padx=20, pady=20)
 
-        fermer_button = tk.Button(solution_fenetre, text="Fermer", command=solution_fenetre.destroy)
+        fermer_button = tk.Button(self.solution_fenetre, text="Fermer", command=self.solution_fenetre.destroy)
         fermer_button.pack(pady=10)
+
+    def reinitialiser(self):
+        if self.solution_fenetre:  # Si la fenêtre de solution est ouverte, la fermer
+            self.solution_fenetre.destroy()
+            self.solution_fenetre = None
+
+        self.taquin = creer_taquin(self.taille)  
+        self.update() 
 
 if __name__ == "__main__":
     root = tk.Tk()
