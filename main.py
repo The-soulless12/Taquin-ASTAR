@@ -54,7 +54,7 @@ def est_solvable(grille):
     return (nb_transposition % 2) == (nb_permutations% 2) # Il s'agit d'un XOR
 
 def afficher_taquin(grille):
-    # Affiche le taquin en mode console
+    # Cette fonction affiche le taquin en mode console
     taille = len(grille)
     largeur = len(str(taille * taille - 1))
     separateur = "+" + ("-" * (largeur + 2) + "+") * taille
@@ -212,7 +212,7 @@ class TaquinApp:
                                  width=4, height=2, relief="solid", font=("Courier", 14))
                 label.grid(row=i, column=j, padx=5, pady=5)
                 self.labels[i][j] = label
-                # Ajout d'un événement de clic pour déplacer une pièce
+                # Ajout d'un événement de clic pour déplacer les pièces
                 label.bind("<Button-1>", lambda event, x=i, y=j: self.clic_piece(x, y))
         self.update()
 
@@ -226,10 +226,10 @@ class TaquinApp:
                     self.labels[i][j].config(text=str(value), bg="lightpink")
 
     def clic_piece(self, i, j):
-        # Trouve la position de la case vide
+        # On cherche la position de la case vide
         x, y = trouver_case_vide(self.taquin)
         
-        # Vérifie si la pièce cliquée est adjacente à la case vide
+        # On vérifie si la pièce cliquée est adjacente à la case vide
         if abs(i - x) + abs(j - y) == 1:
             self.taquin[x][y], self.taquin[i][j] = self.taquin[i][j], self.taquin[x][y]
             self.update()
@@ -254,7 +254,7 @@ class TaquinApp:
     def trouver_solution(self):
         sequence_solution = a_star(self.taquin)
         
-        # Créer une nouvelle fenêtre pour afficher la solution
+        # On crée une nouvelle fenêtre pour afficher la solution
         solution_fenetre = tk.Toplevel(self.root)
         solution_fenetre.title("Solution")
         solution_text = "Voici la solution du taquin :\n" + "\n".join(sequence_solution)
