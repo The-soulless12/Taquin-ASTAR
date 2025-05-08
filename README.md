@@ -2,7 +2,7 @@
 Solveur du jeu du Taquin implémenté en Python, utilisant l'algorithme A* afin de résoudre efficacement le casse-tête en optimisant le chemin vers la solution à l'aide d'une heuristique.
 
 # Fonctionnalités
-- Solveur du jeu du Taquin avec l'algorithme A*, une méthode de recherche de chemin qui permet de résoudre le jeu en optimisant le parcours vers la solution. A* utilise une fonction heuristique qui estime la distance restante pour atteindre la solution et combine cette estimation avec le coût déjà parcouru pour choisir les mouvements les plus prometteurs.
+- Solveur du jeu du Taquin avec l'algorithme A*, une méthode de recherche de chemin **exacte** qui garantit de trouver la solution optimale à condition que l’heuristique utilisée soit admissible. Cette fonction heuristique estime la distance restante pour atteindre la solution et combine cette estimation avec le coût déjà parcouru pour choisir les mouvements les plus prometteurs.
 - Il est possible de jouer graphiquement en cliquant directement sur les cases du Taquin.
 - Il est également possible de jouer en saisissant les directions (`h`, `b`, `d`, `g` pour haut, bas, droite, gauche) puis en appuyant sur `Entrée` ou le bouton `déplacer` afin de déplacer les pièces du jeu.
 - L'application permet de régénérer le Taquin afin de proposer un nouveau casse-tête à résoudre.
